@@ -23,6 +23,7 @@ def play_round():
     low, high, max_tries = choose_difficulty()
     secret = random.randint(low, high)
     tries = 0
+    history = []
 
     print(f"\n我想了一个 {low}～{high} 的数字，你有 {max_tries} 次机会！")
     print("输入 h 可以要一次提示（会消耗 1 次机会）。\n")
@@ -53,17 +54,29 @@ def play_round():
             continue
 
         tries += 1
+        history.append(guess)
+        gap = abs(guess - secret)
         if guess < secret:
-            print("太小了")
+            hint = "太小了"
         elif guess > secret:
-            print("太大了")
+            hint = "太大了"
         else:
             score = max(0, (max_tries - tries + 1) * 10)
             print(f"猜对了！用了 {tries} 次，得分 {score}")
-            return True
+            print(f"猜测记录：{history}")
+            return True, score
+
+        if gap <= 3:
+            closeness = "非常接近"
+        elif gap <= 10:
+            closeness = "有点接近"
+        else:
+            closeness = "还差得远"
+        print(f"{hint}（{closeness}）  已猜过：{history}")
 
     print(f"机会用完了，答案是 {secret}")
-    return False
+    print(f"猜测记录：{history}")
+    return False, 0
 
 
 def main():
@@ -73,18 +86,22 @@ def main():
 
     wins = 0
     rounds = 0
+    best_score = 0
 
     while True:
         rounds += 1
-        if play_round():
+        won, score = play_round()
+        if won:
             wins += 1
+            if score > best_score:
+                best_score = score
 
         again = input("\n再来一局？(y/n)：").strip().lower()
         if again not in ("y", "yes", "是"):
             break
         print()
 
-    print(f"\n本局战绩：{wins}/{rounds} 胜")
+    print(f"\n本局战绩：{wins}/{rounds} 胜，最高分 {best_score}")
     print("谢谢游玩！")
 
 
